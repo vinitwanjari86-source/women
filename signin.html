@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | NOVAERA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #d4a373; /* Gold/Tan theme */
+            --dark-color: #1a1a1a;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            transition: 0.3s;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            color: var(--dark-color);
+        }
+
+        .brand-logo span {
+            color: var(--primary-color);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(212, 163, 115, 0.25);
+        }
+
+        .btn-signin {
+            background-color: var(--dark-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-signin:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .divider:not(:empty)::before { margin-right: .25em; }
+        .divider:not(:empty)::after { margin-left: .25em; }
+
+        .social-login {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .social-btn:hover {
+            background-color: #f1f1f1;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-home"><i class='bx bx-arrow-back'></i> Back to Home</a>
+
+    <div class="login-container">
+        <div class="brand-logo">NOVA<span>ERA</span></div>
+        
+        <h5 class="text-center mb-4 fw-bold">Welcome Back!</h5>
+        
+        <form id="signInForm">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Email Address</label>
+                <input type="email" class="form-control" placeholder="name@example.com" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Password</label>
+                <div class="position-relative">
+                    <input type="password" class="form-control" id="passwordInput" placeholder="Enter password" required>
+                </div>
+                <div class="text-end">
+                    <a href="#" class="text-muted small text-decoration-none">Forgot password?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-signin">SIGN IN</button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <div class="social-login">
+            <div class="social-btn text-danger"><i class='bx bxl-google'></i></div>
+            <div class="social-btn text-primary"><i class='bx bxl-facebook-circle'></i></div>
+            <div class="social-btn text-dark"><i class='bx bxl-apple'></i></div>
+        </div>
+
+        <div class="signup-link">
+            Don't have an account? <a href="#">Create One</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Yahan login logic aayega
+            alert("Logging in to NovaEra...");
+            window.location.href = "index.html"; // Login ke baad shop par bhej dega
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | NovaEra Fashion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        /* Existing Styles */
+        .product-card { transition: 0.3s; border: 1px solid #eee; margin-bottom: 20px; border-radius: 10px; overflow: hidden; height: 100%; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .img-container { height: 320px; overflow: hidden; background: #f9f9f9; }
+        .img-container img { object-fit: cover; height: 100%; width: 100%; transition: 0.5s; }
+        .product-card:hover img { transform: scale(1.08); }
+        #cart-sidebar { position: fixed; right: -400px; top: 0; width: 350px; height: 100%; background: white; box-shadow: -2px 0 15px rgba(0,0,0,0.2); z-index: 1050; transition: 0.4s; padding: 20px; overflow-y: auto; }
+        #cart-sidebar.active { right: 0; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .navbar-brand span { color: #d4a373; }
+        .btn-add { background: #000; color: #fff; border: none; }
+        .btn-add:hover { background: #d4a373; color: #000; }
+
+        /* New Tracking Header Style */
+        .tracking-container { display: flex; justify-content: center; padding: 20px 0; background: #f8f9fa; }
+        .track-btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 30px; background-color: #000; color: #fff; text-decoration: none; font-weight: 600; border-radius: 50px; border: none; transition: 0.3s; }
+        .track-btn:hover { background-color: #333; transform: translateY(-2px); color: white; }
+
+        /* Tracking Modal Animation */
+        .step { display: flex; align-items: center; margin-bottom: 20px; opacity: 0.3; transition: 0.5s; }
+        .step.active { opacity: 1; color: #198754; }
+        .step-icon { width: 35px; height: 35px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+        .step.active .step-icon { background: #198754; color: white; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold">Customer Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="orderForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Full Name</label>
+                        <input type="text" id="custName" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Phone Number</label>
+                        <input type="tel" id="custPhone" class="form-control" placeholder="Enter phone number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Delivery Address</label>
+                        <textarea id="custAddress" class="form-control" rows="3" placeholder="Enter full address" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Payment Method</label>
+                        <select id="custPayment" class="form-select" required>
+                            <option value="" disabled selected>Select payment mode</option>
+                            <option value="UPI">UPI / Net Banking</option>
+                            <option value="Cash on Delivery">Cash on Delivery</option>
+                        </select>
+                    </div>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Order Total:</span>
+                            <span class="fw-bold text-success">$<span id="modal-total">0</span></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">CONFIRM & PAY</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body p-4">
+                <div class="d-flex justify-content-between mb-4">
+                    <h5 class="fw-bold">Live Tracking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div id="trackingContent">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="#">NOVA<span>ERA</span></a>
+            <button class="btn btn-outline-dark position-relative border-0" onclick="toggleCart()">
+                <i class='bx bx-shopping-bag fs-3'></i>
+                <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class='bx bx-search fs-4 text-muted'></i></span>
+            <input type="text" id="myInput" onkeyup="searchFunc()" class="form-control border-start-0 ps-0 p-3" placeholder="Search for clothing, jewellery, sleepers, heels...">
+        </div>
+    </div>
+
+    <div class="tracking-container">
+        <button onclick="openTracking()" class="track-btn">
+            Track Now
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+        </button>
+    </div>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4" id="product-list">
+                
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="download (1).jpg" alt="Dress"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">White Floral Summer Dress</h5>
+                            <p class="fw-bold">$45.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Floral Summer Dress', 45)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Just Bead It _ Sandals.jpg" alt="Sandals"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Ethnic Beaded Sandals</h5>
+                            <p class="fw-bold">$25.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Beaded Sandals', 25)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="download (3).jpg" alt="Necklace"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Royal Gold Necklace</h5>
+                            <p class="fw-bold">$120.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Gold Necklace', 120)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="download (5).jpg" alt="Shoes"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Leather Formal Shoes</h5>
+                            <p class="fw-bold">$89.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Formal Shoes', 89)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="trending red and golden pakistani gharara.jpg" alt="Gharara"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Red Golden Pakistani Gharara</h5>
+                            <p class="fw-bold">$150.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Pakistani Gharara', 150)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="download (2).jpg" alt="Sleeper"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Velvet Comfort Sliders</h5>
+                            <p class="fw-bold">$25.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Velvet Sliders', 25)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="festive glamour in this stunner 🌸.jpg" alt="Festive"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Festive Glamour Suit</h5>
+                            <p class="fw-bold">$130.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Festive Suit', 130)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="This jutti best describes the 'subtle glam'.jpg" alt="Jutti"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Subtle Glam Jutti</h5>
+                            <p class="fw-bold">$35.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Subtle Jutti', 35)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Navy & Gold Timeless Chic.jpg" alt="Navy Dress"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Navy & Gold Timeless Chic</h5>
+                            <p class="fw-bold">$95.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Navy Chic Set', 95)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Elegant Ethnic Suit with Red Dupatta _ Traditional Indian Outfit _ Wedding & Festive Look.jpg" alt="Suit"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Ethnic Suit & Red Dupatta</h5>
+                            <p class="fw-bold">$110.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Red Dupatta Suit', 110)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Match Jeans,2024 New Autumn Women Elegant Black Boots, Thick Heel Pointed Toe High Heel Boots, Fashionable Ankle Boots For Fall_Winter.jpg" alt="Boots"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Elegant Black Ankle Boots</h5>
+                            <p class="fw-bold">$85.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Black Ankle Boots', 85)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Elegant Champagne Gold Lehenga ✨ Bridal & Wedding Guest Outfit Inspiration.jpg" alt="Lehenga"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Champagne Gold Lehenga</h5>
+                            <p class="fw-bold">$450.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Gold Lehenga', 450)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Neutral Aesthetic Outfit Idea with Brown Wide-Leg Trousers.jpg" alt="Trousers"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Neutral Wide-Leg Trousers</h5>
+                            <p class="fw-bold">$40.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Neutral Trousers', 40)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="maroon dress 🎀🫰.jpg" alt="Maroon"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Elegant Maroon Party Dress</h5>
+                            <p class="fw-bold">$65.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Maroon Dress', 65)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Elegant Blue Kurti Set with Sharara  Minimal Ethnic Outfit 2026.jpg" alt="Blue Set"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Blue Kurti Sharara Set</h5>
+                            <p class="fw-bold">$125.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Blue Sharara Set', 125)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Pinterest Inspired Aesthetic Footwear 👠.jpg" alt="Heels"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Aesthetic Pinterest Heels</h5>
+                            <p class="fw-bold">$55.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Aesthetic Heels', 55)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Heels.jpg" alt="Heels"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Classy Stiletto Heels</h5>
+                            <p class="fw-bold">$70.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Classy Heels', 70)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Luxury Handbags & Jewellery for Women _ USA UK Canada Trending Style.jpg" alt="Luxury"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Luxury Handbag & Gems</h5>
+                            <p class="fw-bold">$300.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Luxury Combo', 300)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="love this indo western dress.jpg" alt="Indo Western"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Modern Indo Western Dress</h5>
+                            <p class="fw-bold">$85.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Indo Western', 85)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 product-item">
+                    <div class="card product-card">
+                        <div class="img-container"><img src="Casual Outfit.jpg" alt="Casual"></div>
+                        <div class="card-body text-center">
+                            <h5 class="product-name fs-6">Chic Casual Everyday Look</h5>
+                            <p class="fw-bold">$50.00</p>
+                            <button class="btn btn-add btn-sm w-100" onclick="addToCart('Casual Outfit', 50)">ADD TO CART</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <div id="cart-sidebar" class="shadow">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold">My Cart</h4>
+            <button class="btn-close" onclick="toggleCart()"></button>
+        </div>
+        <div id="cart-items-container">
+            <p class="text-muted text-center py-5">Your cart is empty.</p>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+            <span>Total:</span>
+            <span>$<span id="total-price">0</span></span>
+        </div>
+        <button class="btn btn-warning w-100 p-3 fw-bold rounded-pill" onclick="placeOrder()">PLACE ORDER</button>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let cart = [];
+    let lastOrder = null; // Memory based tracking (no localstorage)
+
+    function addToCart(name, price) {
+        cart.push({name, price});
+        updateCartUI();
+        toggleCart(true); 
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        const container = document.getElementById('cart-items-container');
+        const countLabel = document.getElementById('cart-count');
+        const totalLabel = document.getElementById('total-price');
+        countLabel.innerText = cart.length;
+        
+        if (cart.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center py-5">Your cart is empty.</p>';
+            totalLabel.innerText = '0';
+            return;
+        }
+
+        let total = 0;
+        container.innerHTML = cart.map((item, index) => {
+            total += item.price;
+            return `
+                <div class="cart-item">
+                    <div><h6 class="mb-0 small fw-bold">${item.name}</h6><span class="text-muted">$${item.price}</span></div>
+                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeItem(${index})"><i class='bx bx-trash'></i></button>
+                </div>`;
+        }).join('');
+        totalLabel.innerText = total;
+    }
+
+    function toggleCart(forceOpen = false) {
+        const sidebar = document.getElementById('cart-sidebar');
+        if(forceOpen) sidebar.classList.add('active');
+        else sidebar.classList.toggle('active');
+    }
+
+    function searchFunc() {
+        let input = document.getElementById('myInput').value.toLowerCase();
+        let items = document.getElementsByClassName('product-item');
+        for (let i = 0; i < items.length; i++) {
+            let name = items[i].querySelector('.product-name').innerText.toLowerCase();
+            items[i].style.display = name.includes(input) ? "" : "none";
+        }
+    }
+
+    // --- ORDER & TRACKING LOGIC ---
+
+    function placeOrder() {
+        if(cart.length === 0) {
+            alert("Bhai, pehle kuch cart mein add toh karo!");
+            return;
+        }
+        document.getElementById('modal-total').innerText = document.getElementById('total-price').innerText;
+        toggleCart(false); 
+        new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Tracking ID Generation
+        const trackId = "NOVA-" + Math.floor(10000 + Math.random() * 90000);
+        
+        // Storing in memory
+        lastOrder = {
+            id: trackId,
+            name: document.getElementById('custName').value,
+            total: document.getElementById('total-price').innerText,
+            statusStep: 1 // 1: Confirmed, 2: Packed, 3: Shipped, 4: Near You
+        };
+
+        alert(`Success! Order Placed.\nYour Tracking ID: ${trackId}\n\nAb 'Track Now' pe click karke check karein!`);
+        
+        cart = [];
+        updateCartUI();
+        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+    });
+
+    function openTracking() {
+        const trackingContent = document.getElementById('trackingContent');
+        const modal = new bootstrap.Modal(document.getElementById('trackingModal'));
+
+        if(!lastOrder) {
+            trackingContent.innerHTML = `
+                <div class="text-center py-4">
+                    <i class='bx bx-package fs-1 text-muted'></i>
+                    <p class="mt-3">Bhai, abhi tak koi order nahi kiya!</p>
+                </div>`;
+        } else {
+            trackingContent.innerHTML = `
+                <div class="mb-3 p-3 bg-light rounded">
+                    <p class="mb-0 small text-muted">Tracking ID: <strong>${lastOrder.id}</strong></p>
+                    <p class="mb-0 small text-muted">Customer: <strong>${lastOrder.name}</strong></p>
+                </div>
+                <div class="step active"><div class="step-icon"><i class='bx bx-check'></i></div> <div><strong>Order Confirmed</strong><br><small>We received your order</small></div></div>
+                <div class="step" id="s2"><div class="step-icon"><i class='bx bx-package'></i></div> <div><strong>Packed</strong><br><small>Items are being packed</small></div></div>
+                <div class="step" id="s3"><div class="step-icon"><i class='bx bx-cycling'></i></div> <div><strong>Out for Delivery</strong><br><small>Rider is on the way</small></div></div>
+                <div class="step" id="s4"><div class="step-icon"><i class='bx bx-home-heart'></i></div> <div><strong>Delivered</strong><br><small>Package handed over</small></div></div>
+            `;
+            
+            // Simulating real-time updates (Blinkit style)
+            setTimeout(() => document.getElementById('s2').classList.add('active'), 2000);
+            setTimeout(() => document.getElementById('s3').classList.add('active'), 5000);
+        }
+        modal.show();
+    }
+</script>
+</body>
+</html>
